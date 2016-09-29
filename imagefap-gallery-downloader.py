@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 
 """
+TODO:
+* Allow user to supply gallery URLs as an args. If args are present,
+then skip prompting the user to enter a URL.
+* Parse number of images from main gallery page
+* Allow user to download multiple galleries.
+** Refactor how the user is presented with information regarding
+a given gallery. Notify them of the gallery's title and the number of images
+the gallery contains.
+
 NOTES:
 * Important: Should we pause between requests in case
 ImageFap times us out? This hasn't happened yet, though.
