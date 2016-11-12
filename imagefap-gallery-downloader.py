@@ -2,11 +2,9 @@
 
 """
 TODO:
-* Allow user to supply gallery URLs as an args. If args are present,
-then skip prompting the user to enter a URL.
 * Parse number of images from main gallery page
-* Allow user to download multiple galleries.
-** Refactor how the user is presented with information regarding
+
+* Refactor how the user is presented with information regarding
 a given gallery. Notify them of the gallery's title and the number of images
 the gallery contains.
 
@@ -26,6 +24,8 @@ from urllib.parse import urlparse
 from html.parser import HTMLParser
 from json import loads as json_loads
 from os import mkdir
+from sys import argv
+from sys import exit
 
 base_url = "http://www.imagefap.com"
 
@@ -68,30 +68,34 @@ class PhotoParser(HTMLParser):
 def get_save_folder(url):
     return urlparse(url)[2].split("/")[-1]
 
-gallery = input("Enter the url of the gallery to download: ")
+if len(argv) <= 1:
+    exit("ERROR: no gallery URLs provided")
 
-gallery = urlparse(gallery)
-gallery = gallery[0] + "://" + ''.join(gallery[1:3]) + "?&view=2"
-# We do all ^this^ to ensure that we're viewing
-# the "One page" version of a gallery.
-# Note: it's important that we add a question mark
-# before &view=2 so that urlparse splits the url
-# in the way we want when we name the save folder.
+for gallery in argv[1:]:
 
-save_folder = get_save_folder(gallery)
+    gallery = urlparse(gallery)
+    gallery = gallery[0] + "://" + ''.join(gallery[1:3]) + "?&view=2"
+    # We do all ^this^ to ensure that we're viewing
+    # the "One page" version of a gallery.
+    # Note: it's important that we add a question mark
+    # before &view=2 so that urlparse splits the url
+    # in the way we want when we name the save folder.
 
-try:
-    mkdir(save_folder)
-except FileExistsError:
-    pass
+    save_folder = get_save_folder(gallery)
 
-save_folder += "/"
+    try:
+        mkdir(save_folder)
+    except FileExistsError:
+        pass
 
-files_downloaded = 0
+    save_folder += "/"
 
-galleryParser = GalleryParser()
-photoParser = PhotoParser()
-gallery_response = urlopen(gallery).read().decode()
-galleryParser.feed(gallery_response)
+    files_downloaded = 0
 
-print("Gallery downloaded! Downloaded %d images." % files_downloaded)
+    galleryParser = GalleryParser()
+    photoParser = PhotoParser()
+    gallery_response = urlopen(gallery).read().decode()
+    galleryParser.feed(gallery_response)
+
+    print("Gallery %s downloaded! Downloaded %d images." %\
+         (save_folder[:-1], files_downloaded))
